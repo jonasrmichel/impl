@@ -1,9 +1,7 @@
-// impl generates method stubs for implementing an interface.
-package main
+package impl
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"go/ast"
 	"go/build"
@@ -11,31 +9,12 @@ import (
 	"go/parser"
 	"go/printer"
 	"go/token"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"text/template"
 
 	"golang.org/x/tools/imports"
-)
-
-const usage = `impl [-dir directory] <recv> <iface>
-
-impl generates method stubs for recv to implement iface.
-
-Examples:
-
-impl 'f *File' io.Reader
-impl Murmur hash.Hash
-impl -dir $GOPATH/src/github.com/josharian/impl Murmur hash.Hash
-
-Don't forget the single quotes around the receiver type
-to prevent shell globbing.
-`
-
-var (
-	flagSrcDir = flag.String("dir", "", "package source directory, useful for vendored code")
 )
 
 // findInterface returns the import path and identifier of an interface.
@@ -286,10 +265,10 @@ var errorInterface = []Func{{
 	Res:  []Param{{Type: "string"}},
 }}
 
-// funcs returns the set of methods required to implement iface.
-// It is called funcs rather than methods because the
+// Funcs returns the set of methods required to implement iface.
+// It is called Funcs rather than methods because the
 // function descriptions are functions; there is no receiver.
-func funcs(iface string, srcDir string) ([]Func, error) {
+func Funcs(iface string, srcDir string) ([]Func, error) {
 	// Special case for the built-in error interface.
 	if iface == "error" {
 		return errorInterface, nil
@@ -319,7 +298,7 @@ func funcs(iface string, srcDir string) ([]Func, error) {
 	for _, fndecl := range idecl.Methods.List {
 		if len(fndecl.Names) == 0 {
 			// Embedded interface: recurse
-			embedded, err := funcs(p.fullType(fndecl.Type), srcDir)
+			embedded, err := Funcs(p.fullType(fndecl.Type), srcDir)
 			if err != nil {
 				return nil, err
 			}
@@ -341,13 +320,13 @@ const stub = "{{if .Comments}}{{.Comments}}{{end}}" +
 
 var tmpl = template.Must(template.New("test").Parse(stub))
 
-// genStubs prints nicely formatted method stubs
+// GenStubs prints nicely formatted method stubs
 // for fns using receiver expression recv.
 // If recv is not a valid receiver expression,
-// genStubs will panic.
-// genStubs won't generate stubs for
+// GenStubs will panic.
+// GenStubs won't generate stubs for
 // already implemented methods of receiver.
-func genStubs(recv string, fns []Func, implemented map[string]bool) []byte {
+func GenStubs(recv string, fns []Func, implemented map[string]bool) []byte {
 	var buf bytes.Buffer
 	for _, fn := range fns {
 		if implemented[fn.Name] {
@@ -364,8 +343,8 @@ func genStubs(recv string, fns []Func, implemented map[string]bool) []byte {
 	return pretty
 }
 
-// validReceiver reports whether recv is a valid receiver expression.
-func validReceiver(recv string) bool {
+// ValidReceiver reports whether recv is a valid receiver expression.
+func ValidReceiver(recv string) bool {
 	if recv == "" {
 		// The parse will parse empty receivers, but we don't want to accept them,
 		// since it won't generate a usable code snippet.
@@ -411,43 +390,4 @@ func flattenCommentMap(m ast.CommentMap) string {
 	}
 
 	return result.String()
-}
-
-func main() {
-	flag.Parse()
-
-	if len(flag.Args()) < 2 {
-		fmt.Fprint(os.Stderr, usage)
-		os.Exit(2)
-	}
-
-	recv, iface := flag.Arg(0), flag.Arg(1)
-	if !validReceiver(recv) {
-		fatal(fmt.Sprintf("invalid receiver: %q", recv))
-	}
-
-	if *flagSrcDir == "" {
-		if dir, err := os.Getwd(); err == nil {
-			*flagSrcDir = dir
-		}
-	}
-
-	fns, err := funcs(iface, *flagSrcDir)
-	if err != nil {
-		fatal(err)
-	}
-
-	// Get list of already implemented funcs
-	implemented, err := implementedFuncs(fns, recv, *flagSrcDir)
-	if err != nil {
-		fatal(err)
-	}
-
-	src := genStubs(recv, fns, implemented)
-	fmt.Print(string(src))
-}
-
-func fatal(msg interface{}) {
-	fmt.Fprintln(os.Stderr, msg)
-	os.Exit(1)
 }

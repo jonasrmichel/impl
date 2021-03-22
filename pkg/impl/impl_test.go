@@ -1,4 +1,4 @@
-package main
+package impl
 
 import (
 	"reflect"
@@ -239,7 +239,7 @@ func TestFuncs(t *testing.T) {
 		tt := tt
 		t.Run(tt.iface, func(t *testing.T) {
 			t.Parallel()
-			fns, err := funcs(tt.iface, "")
+			fns, err := Funcs(tt.iface, "")
 			gotErr := err != nil
 			if tt.wantErr != gotErr {
 				t.Fatalf("funcs(%q).err=%v want %s", tt.iface, err, errBool(tt.wantErr))
@@ -274,7 +274,7 @@ func TestValidReceiver(t *testing.T) {
 	}
 
 	for _, tt := range cases {
-		got := validReceiver(tt.recv)
+		got := ValidReceiver(tt.recv)
 		if got != tt.want {
 			t.Errorf("validReceiver(%q)=%t want %t", tt.recv, got, tt.want)
 		}
@@ -514,7 +514,7 @@ func TestValidMethodComments(t *testing.T) {
 	}
 
 	for _, tt := range cases {
-		fns, err := funcs(tt.iface, ".")
+		fns, err := Funcs(tt.iface, ".")
 		if err != nil {
 			t.Errorf("funcs(%q).err=%v", tt.iface, err)
 		}
@@ -533,30 +533,30 @@ func TestStubGeneration(t *testing.T) {
 		{
 			iface: "github.com/josharian/impl/testdata.Interface1",
 			want:  testdata.Interface1Output,
-			dir:   ".",
+			dir:   "../../",
 		},
 		{
 			iface: "github.com/josharian/impl/testdata.Interface2",
 			want:  testdata.Interface2Output,
-			dir:   ".",
+			dir:   "../../",
 		},
 		{
 			iface: "github.com/josharian/impl/testdata.Interface3",
 			want:  testdata.Interface3Output,
-			dir:   ".",
+			dir:   "../../",
 		},
 		{
 			iface: "Interface1",
 			want:  testdata.Interface1Output,
-			dir:   "testdata",
+			dir:   "../../testdata",
 		},
 	}
 	for _, tt := range cases {
-		fns, err := funcs(tt.iface, tt.dir)
+		fns, err := Funcs(tt.iface, tt.dir)
 		if err != nil {
 			t.Errorf("funcs(%q).err=%v", tt.iface, err)
 		}
-		src := genStubs("r *Receiver", fns, nil)
+		src := GenStubs("r *Receiver", fns, nil)
 		if string(src) != tt.want {
 			t.Errorf("genStubs(\"r *Receiver\", %+#v).src=\n%s\nwant\n%s\n", fns, string(src), tt.want)
 		}
@@ -591,16 +591,16 @@ func TestStubGenerationForImplemented(t *testing.T) {
 	}
 	for _, tt := range cases {
 		t.Run(tt.desc, func(t *testing.T) {
-			fns, err := funcs(tt.iface, ".")
+			fns, err := Funcs(tt.iface, ".")
 			if err != nil {
 				t.Errorf("funcs(%q).err=%v", tt.iface, err)
 			}
 
-			implemented, err := implementedFuncs(fns, tt.recv, "testdata")
+			implemented, err := ImplementedFuncs(fns, tt.recv, "../../testdata")
 			if err != nil {
 				t.Errorf("ifuncs.err=%v", err)
 			}
-			src := genStubs(tt.recv, fns, implemented)
+			src := GenStubs(tt.recv, fns, implemented)
 			if string(src) != tt.want {
 				t.Errorf("genStubs(\"r *Implemented\", %+#v).src=\n\n%s\n\nwant\n\n%s\n\n", fns, string(src), tt.want)
 			}

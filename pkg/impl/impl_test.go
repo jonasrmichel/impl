@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/josharian/impl/testdata"
+	"github.com/jonasrmichel/impl/testdata"
 )
 
 type errBool bool
@@ -287,7 +287,7 @@ func TestValidMethodComments(t *testing.T) {
 		want  []Func
 	}{
 		{
-			iface: "github.com/josharian/impl/testdata.Interface1",
+			iface: "github.com/jonasrmichel/impl/testdata.Interface1",
 			want: []Func{
 				Func{
 					Name: "Method1",
@@ -361,7 +361,7 @@ func TestValidMethodComments(t *testing.T) {
 			},
 		},
 		{
-			iface: "github.com/josharian/impl/testdata.Interface2",
+			iface: "github.com/jonasrmichel/impl/testdata.Interface2",
 			want: []Func{
 				Func{
 					Name: "Method1",
@@ -438,7 +438,7 @@ func TestValidMethodComments(t *testing.T) {
 			},
 		},
 		{
-			iface: "github.com/josharian/impl/testdata.Interface3",
+			iface: "github.com/jonasrmichel/impl/testdata.Interface3",
 			want: []Func{
 				Func{
 					Name: "Method1",
@@ -531,17 +531,17 @@ func TestStubGeneration(t *testing.T) {
 		dir   string
 	}{
 		{
-			iface: "github.com/josharian/impl/testdata.Interface1",
+			iface: "github.com/jonasrmichel/impl/testdata.Interface1",
 			want:  testdata.Interface1Output,
 			dir:   "../../",
 		},
 		{
-			iface: "github.com/josharian/impl/testdata.Interface2",
+			iface: "github.com/jonasrmichel/impl/testdata.Interface2",
 			want:  testdata.Interface2Output,
 			dir:   "../../",
 		},
 		{
-			iface: "github.com/josharian/impl/testdata.Interface3",
+			iface: "github.com/jonasrmichel/impl/testdata.Interface3",
 			want:  testdata.Interface3Output,
 			dir:   "../../",
 		},
@@ -572,19 +572,19 @@ func TestStubGenerationForImplemented(t *testing.T) {
 	}{
 		{
 			desc:  "without implemeted methods",
-			iface: "github.com/josharian/impl/testdata.Interface3",
+			iface: "github.com/jonasrmichel/impl/testdata.Interface3",
 			recv:  "r *Implemented",
 			want:  testdata.Interface4Output,
 		},
 		{
 			desc:  "without implemeted methods with trailing space",
-			iface: "github.com/josharian/impl/testdata.Interface3",
+			iface: "github.com/jonasrmichel/impl/testdata.Interface3",
 			recv:  "r *Implemented ",
 			want:  testdata.Interface4Output,
 		},
 		{
 			desc:  "without implemeted methods and receiver variable",
-			iface: "github.com/josharian/impl/testdata.Interface3",
+			iface: "github.com/jonasrmichel/impl/testdata.Interface3",
 			recv:  "*Implemented",
 			want:  strings.ReplaceAll(testdata.Interface4Output, "r *Implemented", "*Implemented"),
 		},

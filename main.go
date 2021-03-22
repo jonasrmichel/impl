@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/josharian/impl/pkg/impl"
+	"github.com/jonasrmichel/impl/pkg/impl"
 )
 
 const usage = `impl [-dir directory] <recv> <iface>
@@ -17,7 +17,7 @@ Examples:
 
 impl 'f *File' io.Reader
 impl Murmur hash.Hash
-impl -dir $GOPATH/src/github.com/josharian/impl Murmur hash.Hash
+impl -dir $GOPATH/src/github.com/jonasrmichel/impl Murmur hash.Hash
 
 Don't forget the single quotes around the receiver type
 to prevent shell globbing.
